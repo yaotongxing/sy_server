@@ -14,5 +14,5 @@ ConcretePart2::~ConcretePart2()
 
 void ConcretePart2::CreatePart()
 {
-	cout << "Part2    ,";
+	cout << "This is Part2!"<<endl;
 }
