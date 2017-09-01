@@ -1,18 +1,20 @@
 #include "RawSocket.h"
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-
+#include <pthread.h>
 
 #include "EnumAndDefine.h"
+#include "Worker.h"
 
 
 RawSocket::RawSocket()
 {
-	m_iSocket = 0;
+	m_pWorker = new Worker();
 }
 
 
@@ -20,121 +22,77 @@ RawSocket::~RawSocket()
 {
 }
 
-int RawSocket::Create()
+
+
+
+
+int RawSocket::WorkForServer()
 {
-	//创建套接字
-	if (m_iSocket != 0)//已经开启
-		Close();
-
-	m_iSocket = socket(PF_INET,SOCK_STREAM, IPPROTO_TCP);
-}
-
-int RawSocket::Connent()
-{
-
-}
-
-int RawSocket::Close()
-{
-
-}
-
-int RawSocket::Bind(const char* ip, int iPort)
-{
-	if (iPort < 0)
-		return ERROR_INVALID_PARAM;
-
-	//分配IP地址和端口号
-	struct sockaddr_in serv_addr;
-
-	int serv_sock;
-	//serv_sock = socket(PF_INET,SOCK_STREAM, IPPROTO_TCP);
-	serv_sock = m_iSocket;
-	if (-1 == serv_sock)
+	const int MAX_LINES = 4906;
+	//创建监听socket
+	int socket_fd;//描述在一个协议族中，PF_INET标识iPv4协议族
+	if (-1 == (socket_fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)))
 	{
-		return ERROR_INVALID_PARAM;
+		printf("create socket error: %s(errno: %d)\n", strerror(errno), errno);
+		exit(0);
 	}
 
-	memset(&serv_addr,0,sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	if (!ip && strlen(ip)==0)
+	//初始化ip和iport,并将socket绑定到该ip和端口上
+	struct sockaddr_in  serverAddr;
+	memset(&serverAddr,0,sizeof(serverAddr));
+	serverAddr.sin_family = AF_INET;//适用于iPv4网络协议的地址族
+	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);//IP地址设置成INADDR_ANY,让系统自动获取本机的IP地址
+	serverAddr.sin_port = htons(m_iPort);//设置的端口为DEFAULT_PORT,有点问题  
+	if (-1 == bind(socket_fd,(struct sockaddr*)&serverAddr,sizeof(serverAddr)))
 	{
-		serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	}
-	else
-	{
-		serv_addr.sin_addr.s_addr = inet_addr(ip);
-	}
-	serv_addr.sin_port=htons(iPort);
-
-	if (bind(serv_sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1)
-	{
-		return ERROR_BIND_FAIL;
+		printf("bind socket error: %s(errno: %d)\n", strerror(errno), errno);
+		exit(0);
 	}
 
-	return RETURN_SUCCEED;
-}
-
-int RawSocket::Listen(const int iNum)
-{
-	if (-1 == listen(m_iSocket,iNum))
+	//开始监听服务端的端口
+	if (-1 == listen(socket_fd,10))
 	{
-		return ERROR_LISTEN_FAIL;
+		printf("listen socket error: %s(errno: %d)\n", strerror(errno), errno);
+		exit(0);
+	}
+	printf("======waiting for client's request======\n");
+
+	//准备接收客户端发过来的请求
+	int connect_fd;//连接套接字
+	int n;
+	char    buff[4096];
+	char sendMsg[30] = "hello,you have connected!";
+	while (1)
+	{
+		//进入阻塞状态，等待客户端发送请求
+		if (-1 == (connect_fd = accept(socket_fd, (struct sockaddr*)NULL, NULL)))
+		{
+			printf("accept socket error: %s(errno: %d)", strerror(errno), errno);
+			continue;
+		}
+
+		//接收客户端传过来的信息
+		n = recv(connect_fd, buff, MAX_LINES, 0);
+
+		//向客户端发送回应
+		if (!fork())//子进程
+		{
+			if (-1 == send(connect_fd, sendMsg, sizeof(sendMsg), NULL))
+			{
+				perror("send error");
+				close(connect_fd);
+				exit(0);
+			}
+		}
+
+		buff[n] = '\n';//结束符
+		//printf("recv msg from client: %s\n", buff);
+
+		//调用处理类处理数据
+		m_pWorker->HandleRequest(buff);
+
+		close(connect_fd);
 	}
 
-	return RETURN_SUCCEED;
-}
-
-int RawSocket::Accept(char* pIp, int& iPort)
-{
-	if (!pIp)
-	{
-		return ERROR_INVALID_PARAM;
-	}
-
-	//获取客户端的ip和port
-	struct sockaddr_in clnt_addr;
-	socklen_t clnt_addr_sz;//与windows不同
-	
-	int iSockfd = accept(m_iSocket, (struct sockaddr*)&clnt_addr,&clnt_addr_sz);
-
-	if (-1 == iSockfd)
-	{
-		return ERROR_ACCEPT_FAIL;
-	}
-
-	strcpy(pIp, inet_ntoa(clnt_addr.sin_addr));
-	iPort = clnt_addr.sin_port;
-
-	return RETURN_SUCCEED;
-}
-
-int RawSocket::Receive(void *pData, int *pLen,unsigned int iFlag)
-{
-	if ( !pData || !pLen)
-	{
-		return ERROR_INVALID_PARAM;
-	}
-
-	int iRet = recv(m_iSocket, (char*)pData, *pLen, iFlag);
-
-	*pLen = iRet;
-	return iRet;//返回字节数
-}
-
-int RawSocket::Send(const void* pData, int iLen, unsigned int uiFlag)
-{
-	if (!pData)
-	{
-		return ERROR_INVALID_PARAM;
-	}
-
-	int iRet = send(m_iSocket, (char*)pData, iLen,uiFlag);
-
-	if (-1 == iRet)
-	{
-		return ERROR_SEND_FAIL;
-	}
-
-	return iRet;//返回发送出去数据的长度
+	close(socket_fd);
 }
