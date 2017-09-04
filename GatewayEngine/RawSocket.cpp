@@ -6,12 +6,15 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 #include <pthread.h>
 
 #include "EnumAndDefine.h"
 #include "Worker.h"
 
+#define  DEFAULT_PORT 8000
 
+using namespace std;
 RawSocket::RawSocket()
 {
 	m_pWorker = new Worker();
@@ -42,7 +45,7 @@ int RawSocket::WorkForServer()
 	memset(&serverAddr,0,sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;//适用于iPv4网络协议的地址族
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);//IP地址设置成INADDR_ANY,让系统自动获取本机的IP地址
-	serverAddr.sin_port = htons(m_iPort);//设置的端口为DEFAULT_PORT,有点问题  
+	serverAddr.sin_port = htons(DEFAULT_PORT);//设置的端口为DEFAULT_PORT,有点问题  
 	if (-1 == bind(socket_fd,(struct sockaddr*)&serverAddr,sizeof(serverAddr)))
 	{
 		printf("bind socket error: %s(errno: %d)\n", strerror(errno), errno);
@@ -61,18 +64,39 @@ int RawSocket::WorkForServer()
 	int connect_fd;//连接套接字
 	int n;
 	char    buff[4096];
-	char sendMsg[30] = "hello,you have connected!";
+	char sendMsg[30] = "hello,you have connected!\n";
 	while (1)
 	{
 		//进入阻塞状态，等待客户端发送请求
 		if (-1 == (connect_fd = accept(socket_fd, (struct sockaddr*)NULL, NULL)))
 		{
+			//将connect_fd存进容器
+			m_vecConnectFd.push_back(connect_fd);
 			printf("accept socket error: %s(errno: %d)", strerror(errno), errno);
 			continue;
 		}
 
+
 		//接收客户端传过来的信息
 		n = recv(connect_fd, buff, MAX_LINES, 0);
+
+		vector<int>::iterator iterBeg = m_vecConnectFd.begin();
+		vector<int>::iterator iterEnd = m_vecConnectFd.end();
+		if (1 == m_vecConnectFd.size())//只有一个客户端
+		{
+			//n = recv(connect_fd, buff, MAX_LINES, 0);
+		}
+		else if(m_vecConnectFd.size() > 1)//多个客户端
+		{
+			//依次发消息
+
+			//同时发消息
+		}
+		else
+		{
+			printf("No client send message!");
+		}
+		
 
 		//向客户端发送回应
 		if (!fork())//子进程
@@ -95,4 +119,9 @@ int RawSocket::WorkForServer()
 	}
 
 	close(socket_fd);
+}
+
+int RawSocket::WorkForClient()
+{
+
 }

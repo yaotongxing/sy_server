@@ -62,9 +62,11 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
+    <ClInclude Include="DBContext.h" />
     <ClInclude Include="ODBCBase.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DBContext.cpp" />
     <ClCompile Include="ODBCBase.cpp" />
   </ItemGroup>
   <ItemDefinitionGroup />

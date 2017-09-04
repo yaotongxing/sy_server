@@ -21,7 +21,7 @@ Context::~Context()
 
 void* Context::Start()
 {
-	bool isSuccess = false;
+	bool  isSuccess = false;
 	//ÉèÖÃ¶Ë¿ÚºÅ
 	m_pRawSock->SetIport(m_iPort);
 
