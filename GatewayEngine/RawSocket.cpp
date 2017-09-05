@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <sys/select.h>
 #include <pthread.h>
 
 #include "EnumAndDefine.h"
@@ -21,6 +20,11 @@ RawSocket::RawSocket()
 }
 
 
+RawSocket::RawSocket(int val):m_iPort(val)
+{
+
+}
+
 RawSocket::~RawSocket()
 {
 }
@@ -32,6 +36,7 @@ RawSocket::~RawSocket()
 int RawSocket::WorkForServer()
 {
 	const int MAX_LINES = 4906;
+
 	//创建监听socket
 	int socket_fd;//描述在一个协议族中，PF_INET标识iPv4协议族
 	if (-1 == (socket_fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)))
@@ -65,6 +70,8 @@ int RawSocket::WorkForServer()
 	int n;
 	char    buff[4096];
 	char sendMsg[30] = "hello,you have connected!\n";
+
+
 	while (1)
 	{
 		//进入阻塞状态，等待客户端发送请求
@@ -80,22 +87,22 @@ int RawSocket::WorkForServer()
 		//接收客户端传过来的信息
 		n = recv(connect_fd, buff, MAX_LINES, 0);
 
-		vector<int>::iterator iterBeg = m_vecConnectFd.begin();
-		vector<int>::iterator iterEnd = m_vecConnectFd.end();
-		if (1 == m_vecConnectFd.size())//只有一个客户端
-		{
-			//n = recv(connect_fd, buff, MAX_LINES, 0);
-		}
-		else if(m_vecConnectFd.size() > 1)//多个客户端
-		{
-			//依次发消息
-
-			//同时发消息
-		}
-		else
-		{
-			printf("No client send message!");
-		}
+// 		vector<int>::iterator iterBeg = m_vecConnectFd.begin();
+// 		vector<int>::iterator iterEnd = m_vecConnectFd.end();
+// 		if (1 == m_vecConnectFd.size())//只有一个客户端
+// 		{
+// 			//n = recv(connect_fd, buff, MAX_LINES, 0);
+// 		}
+// 		else if(m_vecConnectFd.size() > 1)//多个客户端
+// 		{
+// 			//依次发消息
+// 
+// 			//同时发消息
+// 		}
+// 		else
+// 		{
+// 			printf("No client send message!");
+// 		}
 		
 
 		//向客户端发送回应
@@ -119,6 +126,8 @@ int RawSocket::WorkForServer()
 	}
 
 	close(socket_fd);
+
+	printf("WorkForServer has been excuted!");
 }
 
 int RawSocket::WorkForClient()

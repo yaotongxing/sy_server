@@ -5,6 +5,7 @@ class RawSocket
 {
 public:
 	RawSocket();
+	RawSocket(int val);
 	~RawSocket();
 	///线程准备
 	/*********************************************************************
