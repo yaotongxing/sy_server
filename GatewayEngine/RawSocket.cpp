@@ -10,19 +10,18 @@
 
 #include "EnumAndDefine.h"
 #include "Worker.h"
+#include "Context.h"
 
 #define  DEFAULT_PORT 8000
 
 using namespace std;
 RawSocket::RawSocket()
 {
-	m_pWorker = new Worker();
 }
 
 
 RawSocket::RawSocket(int val):m_iPort(val)
 {
-
 }
 
 RawSocket::~RawSocket()
@@ -87,23 +86,6 @@ int RawSocket::WorkForServer()
 		//接收客户端传过来的信息
 		n = recv(connect_fd, buff, MAX_LINES, 0);
 
-// 		vector<int>::iterator iterBeg = m_vecConnectFd.begin();
-// 		vector<int>::iterator iterEnd = m_vecConnectFd.end();
-// 		if (1 == m_vecConnectFd.size())//只有一个客户端
-// 		{
-// 			//n = recv(connect_fd, buff, MAX_LINES, 0);
-// 		}
-// 		else if(m_vecConnectFd.size() > 1)//多个客户端
-// 		{
-// 			//依次发消息
-// 
-// 			//同时发消息
-// 		}
-// 		else
-// 		{
-// 			printf("No client send message!");
-// 		}
-		
 
 		//向客户端发送回应
 		if (!fork())//子进程
@@ -116,11 +98,9 @@ int RawSocket::WorkForServer()
 			}
 		}
 
-		buff[n] = '\n';//结束符
-		//printf("recv msg from client: %s\n", buff);
-
+		
 		//调用处理类处理数据
-		m_pWorker->HandleRequest(buff);
+		m_pCt->GetWorker()->HandleRequest(buff);
 
 		close(connect_fd);
 	}

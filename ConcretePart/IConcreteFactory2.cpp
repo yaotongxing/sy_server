@@ -14,5 +14,6 @@ IConcreteFactory2::~IConcreteFactory2()
 Part* IConcreteFactory2::CreateOperation()
 {
 	Part* part = new ConcretePart2();
+	part->SetCon(m_pFacCon);
 	return part;
 }

@@ -1,4 +1,6 @@
 #pragma once
+class Config;
+
 class Worker
 {
 public:
@@ -14,5 +16,11 @@ public:
 	* @outparam : 
 	**********************************************************************/
 	bool HandleRequest(char* buff);
+
+public:
+	void SetCon(Config* val) { m_pCon = val; }
+	Config* GetCon() { return m_pCon; }
+private:
+	Config* m_pCon;
 };
 
