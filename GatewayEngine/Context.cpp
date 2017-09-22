@@ -1,5 +1,6 @@
 #include "Context.h"
-#include <pthread.h>
+//#include <pthread.h>
+#include<signal.h>
 #include <stdio.h>
 
 #include "../DataStruct/Config.h"
@@ -34,13 +35,16 @@ void* Context::ThreadFunction(void *)
 	m_gContext->m_pRawSock->SetIport(m_gContext->m_iPort);
 	m_gContext->m_pRawSock->SetContext(m_gContext);
 
-	//调用服务端
-	m_gContext->m_pRawSock->WorkForServer();
+	/////调用服务端
+	//单客户端
+	m_gContext->m_pRawSock->WorkServerForSingleCt();
+
+	//多客户单
+	//m_gContext->m_pRawSock->WorkServerForMultiCt();
 
 	//测试多线程
-	printf("ThreadFunction has been excuted!\n");
+	//printf("ThreadFunction has been excuted!\n");
 
-	//return 
 }
 
 void* Context::Start()
@@ -49,12 +53,24 @@ void* Context::Start()
 	m_pWorker->SetCon(m_pCon);
 
 	//开启线程
-	pthread_t tid;
-	pthread_create(&tid, NULL, ThreadFunction, NULL);
+	pthread_create(&m_pThread, NULL, ThreadFunction, NULL);
 
-	//test
+	//不开线程
 	//void *ptr;
 	//ThreadFunction(ptr);
 
+}
+
+bool Context::Stop()
+{
+	bool isSuccess = true;
+	//将线程终止,并且要将套接字关闭
+	m_pRawSock->Stop();
+	if (!pthread_kill(m_pThread, 0))
+	{
+		isSuccess = true;
+	}
+
+	return isSuccess;
 }
 

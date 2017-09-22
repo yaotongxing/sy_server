@@ -1,20 +1,21 @@
 #pragma once
 #include <iostream>
 #include <string.h>
-#define  MAX_NUM 4096
-class Config
+
+class Context;
+
+
+class SingleInstance
 {
 public:
+	static SingleInstance* GetInstance();
+	~SingleInstance();
 	
-	~Config();
-	static Config* GetInstance();
+	bool Start();
+	bool Stop();
 
-	void SetBuff(char *buff);
-	char* GetBuf() { return m_cBuff; }
 
 public:
-	void SetNum(int val) { m_num = val; }
-	int GetNum() { return m_num; }
 	void SetNum1(double& val) { m_dNum1 = val; }
 	double GetNum1() { return m_dNum1; }
 
@@ -24,19 +25,16 @@ public:
 	void SetName(char val[]) { strcpy(m_cName, val); }
 	char* GetName() { return m_cName; }
 private:
-	Config();
-	static Config* m_pCon;
-
-	///个数
-	int m_num;
-	///接收客户端发过来的消息
-	char m_cBuff[4096];
-	
+	SingleInstance();
+	///
+	static SingleInstance* m_pS;
 	///
 	double m_dNum1;
 	///
 	double m_dNum2;
 	///
 	char m_cName[206];
+	///
+	Context* m_pCt;
 };
 

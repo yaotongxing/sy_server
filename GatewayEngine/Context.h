@@ -1,4 +1,5 @@
 #pragma once
+#include <pthread.h>
 
 class Config;
 class RawSocket;
@@ -36,7 +37,15 @@ public:
 	* @outparam : 
 	**********************************************************************/
 	void* Start();
-
+	/*********************************************************************
+	* @brief : 停止所有工作
+	* @author : yaotongxing
+	* @date : 2017/9/22 14:29
+	* @version : ver 1.0
+	* @inparam : 
+	* @outparam : 
+	**********************************************************************/
+	bool Stop();
 
 public:
 	void SetIport(int val) { m_iPort = val; }
@@ -56,8 +65,10 @@ private:
 	///设置端口
 	int m_iPort;
 	///设置ip值
-	///
+	///数据结构类指针
 	Config* m_pCon;
-	///
+	///计算类指针
 	Worker* m_pWorker;
+	///线程ID
+	pthread_t m_pThread;
 };

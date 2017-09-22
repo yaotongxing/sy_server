@@ -27,14 +27,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9b2f3a91-2a5d-4c9d-a5df-ff50f7dab4a4}</ProjectGuid>
+    <ProjectGuid>{298dd7ad-045d-4677-b272-a048699a474c}</ProjectGuid>
     <Keyword>Linux</Keyword>
-    <RootNamespace>sy_server</RootNamespace>
+    <RootNamespace>LogManage</RootNamespace>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <ApplicationType>Linux</ApplicationType>
     <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
     <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
-    <LinuxProjectType>{D51BCBC9-82E9-4017-911E-C93873C4EA2B}</LinuxProjectType>
+    <LinuxProjectType>{2238F9CD-F817-4ECC-BD14-2524D2669B35}</LinuxProjectType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
@@ -60,23 +60,11 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\linuxInc\include;$(IncludePath)</IncludePath>
-  </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="SingleInstance.cpp" />
+    <ClInclude Include="OutputLog.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Builder\Builder.vcxproj">
-      <Project>{ad3bd336-80bd-406d-9c23-29fbe7a18b04}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\GatewayEngine\GatewayEngine.vcxproj">
-      <Project>{e19719b5-66b9-4b3e-bb25-e55bded9c0f7}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="SingleInstance.h" />
+    <ClCompile Include="OutputLog.cpp" />
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
